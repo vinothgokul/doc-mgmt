@@ -1,20 +1,34 @@
-import { Injectable } from '@nestjs/common';
-import { RegisterUserDto } from './dto/register-user.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { LoginUserDto } from './dto/login-user.dto';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AuthService {
-  private users:RegisterUserDto[] = [];
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  registerUser(registerUserDto: RegisterUserDto) {
-    this.users.push(registerUserDto);
-    return this.users;
+  async registerUser(registerUserDto: Prisma.UserCreateInput) {
+    return this.databaseService.user.create({
+      data: registerUserDto
+    });
   }
 
-  loginUser(loginUserDto: LoginUserDto) {
-    const loginUser = this.users.find(user => user.username === loginUserDto.username && user.password === loginUserDto.password);
-    if(loginUser){
-      return 'User logged in successfully';
-    }
+  async loginUser(loginUserDto: LoginUserDto) {
+    const user = await this.databaseService.user.findUnique({
+      where: {
+        username: loginUserDto.username
+      }
+    })
+    
+    if(!user) throw new NotFoundException('User not found');
+
+    const ifPasswordMatch = loginUserDto.password === user.password;
+
+    if(!ifPasswordMatch) throw new NotFoundException('Incorrect password');
+
+    return 'User logged in successfully';
+  }
+  async getAllUsers() {
+    return this.databaseService.user.findMany();
   }
 }
