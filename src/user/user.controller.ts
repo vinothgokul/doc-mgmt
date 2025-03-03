@@ -9,6 +9,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'),RolesGuard)
+@Roles(Role.ADMIN)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -18,13 +19,12 @@ export class UserController {
   }
 
   @Get()
-  @Roles(Role.ADMIN)
   findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
@@ -34,7 +34,6 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }

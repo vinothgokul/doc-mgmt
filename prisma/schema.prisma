@@ -21,6 +21,18 @@ model User {
   role     Role   @default(VIEWER)
 }
 
+model Document {
+  id Int @id @default(autoincrement())
+  title String
+  filePath String
+}
+
+model RevokedToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  revokedAt DateTime @default(now())
+}
+
 enum Role {
   ADMIN
   EDITOR
