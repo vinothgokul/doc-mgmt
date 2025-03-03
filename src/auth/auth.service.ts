@@ -1,15 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private jwtService: JwtService
+  ) {}
 
   async registerUser(registerUserDto: Prisma.UserCreateInput) {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(registerUserDto.password, saltRounds);
+
     return this.databaseService.user.create({
-      data: registerUserDto
+      data: {
+        ...registerUserDto,
+        password: hashedPassword
+      }
     });
   }
 
@@ -22,11 +33,15 @@ export class AuthService {
     
     if(!user) throw new NotFoundException('User not found');
 
-    const ifPasswordMatch = loginUserDto.password === user.password;
+    const ifPasswordMatch = await bcrypt.compare(loginUserDto.password, user.password);
 
     if(!ifPasswordMatch) throw new NotFoundException('Incorrect password');
 
-    return 'User logged in successfully';
+    const payload = { sub: user.id, username: user.username, role: user.role };
+
+    return {
+      access_token: await this.jwtService.sign(payload)
+    }
   }
   async getAllUsers() {
     return this.databaseService.user.findMany();

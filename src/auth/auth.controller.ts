@@ -8,12 +8,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  userRegister(@Body(ValidationPipe) registerUserDto: Prisma.UserCreateInput){
+  async userRegister(@Body(ValidationPipe) registerUserDto: Prisma.UserCreateInput){
     return this.authService.registerUser(registerUserDto);
   }
 
   @Post('login')
-  userLogin(@Body(ValidationPipe) loginUserDto: Prisma.UserCreateInput){
+  async userLogin(@Body(ValidationPipe) loginUserDto: Prisma.UserCreateInput){
     return this.authService.loginUser(loginUserDto);
   }
 
