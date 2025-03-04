@@ -1,21 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Request as ExpressRequest } from 'express';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+
 
 @Controller('document')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
-  @Post()
+  @Post('upload')
   @Roles(Role.ADMIN, Role.EDITOR)
+  @UseInterceptors(FileInterceptor('document'))
   create(
-    @Body() body: {title: string, filePath: string}
+    @UploadedFile() file: Express.Multer.File,
+    @Body('title') title: string
   ) {
-    return this.documentService.create(body.title, body.filePath);
+    return this.documentService.create(title, file);
   }
 
   @Get()
@@ -30,13 +35,29 @@ export class DocumentController {
 
   @Patch(':id')
   @Roles(Role.ADMIN,Role.EDITOR)
-  update(@Param('id', ParseIntPipe) id: number, @Body() body: {title: string, filePath: string}) {
-    return this.documentService.update(id, body.title, body.filePath);
+  @UseInterceptors(FileInterceptor('document'))
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('title') title: string) {
+    return this.documentService.update(id, title, file);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN,Role.EDITOR)
+  @Roles(Role.ADMIN)
   remove(@Param('id',ParseIntPipe) id: number) {
     return this.documentService.remove(id);
+  }
+
+  @Post(':id/ingestion/start')
+  @Roles(Role.ADMIN)
+  async triggerIngestion(@Param('id', ParseIntPipe) id: number) {
+    return this.documentService.triggerIngestion(id)
+  }
+
+  @Get('ingestion/:processId')
+  @Roles(Role.ADMIN)
+  async getIngestionStatus(@Param('processId', ParseIntPipe) processId: number) {
+    return this.documentService.getIngestionStatus(processId)
   }
 }

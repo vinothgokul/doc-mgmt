@@ -19,15 +19,22 @@ model User {
   email    String @unique
   password String
   role     Role   @default(VIEWER)
-  documents Document[]
 }
 
 model Document {
   id Int @id @default(autoincrement())
   title String
   filePath String
-  ownerId Int
-  owner User @relation(fields: [ownerId], references: [id])
+  IngestionProcess IngestionProcess[]
+}
+
+model IngestionProcess {
+  id Int @id @default(autoincrement())
+  documentId Int
+  document Document @relation(fields: [documentId], references: [id])
+  status String @default("pending")
+  startedAt DateTime @default(now())
+  updatedat DateTime @updatedAt
 }
 
 model RevokedToken {
