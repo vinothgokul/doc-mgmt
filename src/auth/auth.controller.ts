@@ -1,7 +1,8 @@
-import { Body, Controller, Request, Get, Post, ValidationPipe, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Request, Get, Post, ValidationPipe, UnauthorizedException, UsePipes } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Prisma } from '@prisma/client';
 import { TokenService } from './token/token.service';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +13,8 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async userRegister(@Body(ValidationPipe) registerUserDto: Prisma.UserCreateInput){
+  @UsePipes(new ValidationPipe({whitelist: true, forbidNonWhitelisted: true}))
+  async userRegister(@Body() registerUserDto: RegisterUserDto){
     return this.authService.registerUser(registerUserDto);
   }
 

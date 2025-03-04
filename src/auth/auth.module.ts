@@ -15,10 +15,10 @@ import { TokenService } from './token/token.service';
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '60m' }
     }),
-    UserModule,
     PassportModule,
     DatabaseModule],
   providers: [AuthService, UserService, JwtStrategy, TokenService],
-  controllers: [AuthController]
+  controllers: [AuthController],
+  exports: [AuthService]
 })
 export class AuthModule {}

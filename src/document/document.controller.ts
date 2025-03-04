@@ -4,7 +4,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/role.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { Request as ExpressRequest } from 'express'
 
 @Controller('document')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -12,7 +11,7 @@ export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.EDITOR)
   create(
     @Body() body: {title: string, filePath: string}
   ) {
@@ -36,7 +35,7 @@ export class DocumentController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN,Role.EDITOR)
   remove(@Param('id',ParseIntPipe) id: number) {
     return this.documentService.remove(id);
   }

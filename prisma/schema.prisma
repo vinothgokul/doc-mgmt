@@ -19,12 +19,15 @@ model User {
   email    String @unique
   password String
   role     Role   @default(VIEWER)
+  documents Document[]
 }
 
 model Document {
   id Int @id @default(autoincrement())
   title String
   filePath String
+  ownerId Int
+  owner User @relation(fields: [ownerId], references: [id])
 }
 
 model RevokedToken {

@@ -4,6 +4,7 @@ import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 import { DatabaseService } from 'src/database/database.service';
+import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +13,7 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async registerUser(registerUserDto: Prisma.UserCreateInput) {
+  async registerUser(registerUserDto: RegisterUserDto) {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(registerUserDto.password, saltRounds);
 
