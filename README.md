@@ -1,99 +1,247 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+---
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Document Management Backend
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A NestJS-based backend service for user authentication, document management, and ingestion control, integrated with a PostgreSQL database via Prisma and a Python backend for ingestion processing.
 
-## Description
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Roles and Permissions](#roles-and-permissions)
+- [APIs](#apis)
+- [Tech Stack](#tech-stack)
+- [Setup Instructions](#setup-instructions)
+- [Usage](#usage)
+- [Future Enhancements](#future-enhancements)
+- [Contributing](#contributing)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## Project Overview
+This project is a backend service designed to manage user authentication and document-related operations, including CRUD (Create, Read, Update, Delete) and ingestion processes. It uses a microservices-friendly architecture to interact with an external Python backend for document ingestion. The system enforces role-based authorization with three roles: **Admin**, **Editor**, and **Viewer**, secured via JWT authentication.
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## Features
+- **User Authentication**: Register and login with JWT-based authentication.
+- **Document Management**: CRUD operations for documents with file upload support.
+- **Ingestion Control**: Trigger and track document ingestion processes in a Python backend.
+- **Role-Based Access**: Permissions enforced for Admin, Editor, and Viewer roles.
+- **Database**: PostgreSQL integration via Prisma for persistent storage.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## Roles and Permissions
 
-# production mode
-$ npm run start:prod
-```
+The system defines three roles with distinct permissions within document management:
 
-## Run tests
+- **Admin**: Full control over all documents (CRUD) and ingestion processes (trigger and manage all). Full control over all users (CRUD)
+- **Editor**: Can create and update all documents).
+- **Viewer**: Read-only access to all documents; no ingestion or modification capabilities.
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## APIs
 
-# test coverage
-$ npm run test:cov
-```
+### Authentication
+- **POST /auth/register**
+  - Registers a new user.
+  - Body: `{ "username": "string", "email": "string", "password": "string" }`
+  - Roles: Public (no JWT required).
 
-## Deployment
+- **POST /auth/login**
+  - Logs in a user and returns a JWT.
+  - Body: `{ "username": "string", "password": "string" }`
+  - Roles: Public.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- **POST /auth/logout**
+  - Revokes the current JWT (blacklisted).
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Authenticated users.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### User Management
+- **POST /user**
+  - Creates a new user.
+  - Body: `{ "username": "string", "email": "string", "password": "string", "role": "ADMIN | EDITOR | VIEWER" }`
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+- **GET /user**
+  - Retrieves all users.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- **GET /user/:id**
+  - Retrieves a specific user by ID.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-## Resources
+- **PATCH /user/:id**
+  - Updates a user’s role.
+  - Body: `{ "role": "ADMIN | EDITOR | VIEWER" }`
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-Check out a few resources that may come in handy when working with NestJS:
+- **DELETE /user/:id**
+  - Deletes a user.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Document Management
+- **POST /document/upload**
+  - Uploads a new document.
+  - Body: `multipart/form-data` with `file` (file), `title` (string).
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin, Editor.
 
-## Support
+- **GET /document**
+  - Retrieves all documents.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin, Editor, Viewer.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **GET /document/:id**
+  - Retrieves a specific document by ID.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin, Editor, Viewer.
 
-## Stay in touch
+- **PATCH /document/:id**
+  - Updates a document’s title or file.
+  - Body: `multipart/form-data` with `file` (file), `title` (string)`
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin, Editor.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **DELETE /document/:id**
+  - Deletes a document.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin only.
 
-## License
+### Ingestion Control
+- **POST /document/:id/ingestion/start**
+  - Triggers ingestion for a document in the Python backend.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **GET /document/ingestion/:processId**
+  - Retrieves the status of an ingestion process.
+  - Headers: `Authorization: Bearer <token>`
+  - Roles: Admin.
+
+---
+
+## Tech Stack
+- **Framework**: NestJS (TypeScript)
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT (JSON Web Tokens)
+- **File Upload**: Multer (`@nestjs/platform-express`)
+- **Validation**: `class-validator` and `ValidationPipe`
+
+---
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js (v16+ recommended)
+- PostgreSQL (local or cloud, e.g., Neon)
+
+
+### Installation
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   cd doc-mgmt
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment**:
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL=postgres://username:password@host:port/dbname?sslmode=require
+   JWT_SECRET=your-very-secret-key
+   JWT_EXPIRES_IN=1h
+   ```
+
+4. **Set Up Database**:
+   - Run Prisma migrations:
+     ```bash
+     npx prisma migrate dev --name init
+     ```
+   - Generate Prisma client:
+     ```bash
+     npx prisma generate
+     ```
+
+5. **Run the Application**:
+   ```bash
+   npm run start:dev
+   ```
+   - The server will run on `http://localhost:3000`.
+
+---
+
+## Usage
+
+1. **Register a User**:
+   ```bash
+   curl -X POST http://localhost:3000/auth/register \
+   -H "Content-Type: application/json" \
+   -d '{"username": "admin", "email": "admin@example.com", "password": "secret123"}'
+   ```
+   - Role defaults to `"viewer"`
+   - Manually set the role to `"admin"` for the first time in the database.
+
+2. **Login**:
+   ```bash
+   curl -X POST http://localhost:3000/auth/login \
+   -H "Content-Type: application/json" \
+   -d '{"username": "admin", "password": "secret123"}'
+   ```
+   - Returns a JWT token.
+
+3. **Create a User (Admin)**:
+   ```bash
+   curl -X POST http://localhost:3000/user \
+   -H "Authorization: Bearer <token>" \
+   -H "Content-Type: application/json" \
+   -d '{"username": "editor1", "email": "editor1@example.com", "password": "secret123", "role": "EDITOR"}'
+   ```
+
+3. **Upload a Document (Admin/Editor)**:
+   ```bash
+   curl -X POST http://localhost:3000/document/upload \
+   -H "Authorization: Bearer <token>" \
+   -F "file=@/path/to/document.pdf" \
+   -F "title=My Document"
+   ```
+
+4. **View Documents (All Roles)**:
+   ```bash
+   curl -X GET http://localhost:3000/document \
+   -H "Authorization: Bearer <token>"
+   ```
+
+5. **Trigger Ingestion (Admin)**:
+   ```bash
+   curl -X POST http://localhost:3000/document/1/ingestion/start \
+   -H "Authorization: Bearer <token>"
+   ```
+
+---
+
+## Future Enhancements
+- **Privacy Control**: Add a `public` flag to documents to limit Viewer visibility.
+- **Track Document Changes**: Link the document with the owner and track who made the changes to the document.
+- **Revoked JWT Cleanup**: Add a logic to cleanup revoked JWT from database.
+- **Cloud Storage**: Replace local file storage with AWS S3 or similar.
+- **Ingestion Callback**: Add an endpoint for the Python backend to update ingestion status.
+- **Pagination**: Implement pagination for `GET /documents`.
+
+---
+
+## Contributing
+Feel free to submit issues or pull requests to enhance this project. Ensure any changes align with the role-based permissions and microservices architecture.
+
+---
