@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe, UsePipes, ValidationPipe } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Prisma } from '@prisma/client';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/auth/decorators/role.decorator';
-import { Role } from 'src/auth/enums/role.enum';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { AuthService } from 'src/auth/auth.service';
-import { Prisma } from '@prisma/client';
+import { Roles } from '../auth/decorators/role.decorator';
+import { Role } from '../auth/enums/role.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { AuthService } from '../auth/auth.service';
 
 @Controller('user')
 @UseGuards(AuthGuard('jwt'),RolesGuard)

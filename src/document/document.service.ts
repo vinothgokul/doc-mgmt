@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 
 
 @Injectable()
@@ -18,13 +18,23 @@ export class DocumentService {
   }
 
   async findAll() {
-    return await this.databaseService.document.findMany()
+    const documents = await this.databaseService.document.findMany()
+
+    if(!documents || documents.length === 0)
+      throw new ForbiddenException('No documents found')
+
+    return documents
   }
 
   async findOne(id: number) {
-    return await this.databaseService.document.findUnique({
+    const document = await this.databaseService.document.findUnique({
       where: {id}
     })
+
+    if(!document)
+      throw new ForbiddenException('Document not found');
+
+    return document
   }
 
   async update(id: number, title: string, file: Express.Multer.File) {
@@ -32,9 +42,9 @@ export class DocumentService {
       where: {id}
     })
 
-    if(!document) throw new ForbiddenException("Doc not Found")
+    if(!document) throw new ForbiddenException("Document not Found")
 
-    return this.databaseService.document.update({
+    return await this.databaseService.document.update({
       where: {id},
       data: {
         title : title,
@@ -49,7 +59,7 @@ export class DocumentService {
       where: {id}
     })
 
-    if(!document) throw new ForbiddenException("Doc not Found")
+    if(!document) throw new ForbiddenException("Document not Found")
 
     return this.databaseService.document.delete({
       where: {id}
@@ -61,7 +71,7 @@ export class DocumentService {
       where: {id: documentId}
     })
 
-    if(!doc) throw new ForbiddenException('Doc not Found')
+    if(!doc) throw new ForbiddenException('Document not Found')
 
     const process = await this.databaseService.ingestionProcess.create({
       data: {

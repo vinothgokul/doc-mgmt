@@ -1,10 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ParseIntPipe, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { DocumentService } from './document.service';
 import { AuthGuard } from '@nestjs/passport';
-import { Request as ExpressRequest } from 'express';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/auth/decorators/role.decorator';
-import { Role } from 'src/auth/enums/role.enum';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/role.decorator';
+import { Role } from '../auth/enums/role.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 

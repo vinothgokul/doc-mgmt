@@ -1,14 +1,14 @@
 import { Body, Controller, Request, Get, Post, ValidationPipe, UnauthorizedException, UsePipes } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Prisma } from '@prisma/client';
 import { TokenService } from './token/token.service';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('auth')
 export class AuthController {
 
   constructor(
-    private readonly authService: AuthService,
+    private authService: AuthService,
     private tokenService: TokenService
   ) {}
 
@@ -19,7 +19,7 @@ export class AuthController {
   }
 
   @Post('login')
-  async userLogin(@Body(ValidationPipe) loginUserDto: Prisma.UserCreateInput){
+  async userLogin(@Body(ValidationPipe) loginUserDto: LoginUserDto){
     return this.authService.loginUser(loginUserDto);
   }
 

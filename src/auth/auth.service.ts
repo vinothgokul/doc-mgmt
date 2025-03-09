@@ -1,15 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from '../database/database.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly databaseService: DatabaseService,
+    private databaseService: DatabaseService,
     private jwtService: JwtService
   ) {}
 
@@ -36,7 +35,7 @@ export class AuthService {
 
     const ifPasswordMatch = await bcrypt.compare(loginUserDto.password, user.password);
 
-    if(!ifPasswordMatch) throw new NotFoundException('Incorrect password');
+    if(!ifPasswordMatch) throw new NotFoundException('Incorrect Password');
 
     const payload = { sub: user.id, username: user.username, role: user.role };
 
