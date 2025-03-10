@@ -31,6 +31,8 @@ export class UserService {
     return await this.databaseService.user.update({
       where: {id},
       data: {
+        username: updateUserDto.username,
+        email: updateUserDto.email,
         role: updateUserDto.role
       }
     })

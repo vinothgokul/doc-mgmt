@@ -33,7 +33,7 @@ describe('UserController', () => {
 
 
     mockUser = { id: 1, username: 'testuser', email: 'test@example.com', role: Role.EDITOR };
-    updateUserDto = { role: Role.ADMIN };
+    updateUserDto = { username: 'testuser', email: 'test@example.com', role: Role.ADMIN };
     registerUserDto = { username: 'newuser', email: 'newuser@example.com', password: 'password123' };
   });
 

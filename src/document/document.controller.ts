@@ -14,7 +14,7 @@ export class DocumentController {
 
   @Post('upload')
   @Roles(Role.ADMIN, Role.EDITOR)
-  @UseInterceptors(FileInterceptor('document'))
+  @UseInterceptors(FileInterceptor('file'))
   create(
     @UploadedFile() file: Express.Multer.File,
     @Body('title') title: string
