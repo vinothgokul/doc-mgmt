@@ -38,8 +38,39 @@ export function DocumentProvider({children}) {
     }
   }
 
+  async function triggerIngestion(id) {
+    try {
+      const response = await documentApi.triggerIngestion(id);
+      console.log(response.data);
+      setDocuments(documents.map(doc => {
+        if(doc.id === id)
+          doc.triggerStatus = response.data.status;
+        return doc;
+      }))
+    }
+    catch(error) {
+      console.error("Failed to trigger ingestion", error.response?.data || error.message)
+    }
+  }
+
+  async function triggerStatus(id) {
+    try{
+      const response = await documentApi.getIngestionStatus(id);
+      console.log(response.data);
+      setDocuments(documents.map(doc => {
+        if(doc.id === id)
+          doc.triggerStatus = response.data.status;
+        return doc;
+      }))
+      return response.data;
+    }
+    catch(error) {
+      console.error("Failed to get ingestion status", error.response?.data || error.message)
+    }
+  }
+
   return(
-    <DocumentContext.Provider value={{ documents, loading, fetchDocuments ,uploadDocument}}>
+    <DocumentContext.Provider value={{ documents, loading, fetchDocuments ,uploadDocument, triggerIngestion, triggerStatus}}>
       {children}
     </DocumentContext.Provider>
   )

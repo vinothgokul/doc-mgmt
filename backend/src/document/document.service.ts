@@ -1,11 +1,16 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 
 @Injectable()
 export class DocumentService {
+  private readonly pythonServiceUrl = 'http://localhost:8000';
+
   constructor(
-    private databaseService: DatabaseService,
+    private readonly databaseService: DatabaseService,
+    private readonly httpService: HttpService
   ) {}
 
   async create(title: string, file: Express.Multer.File) {
@@ -70,25 +75,46 @@ export class DocumentService {
     const doc = await this.databaseService.document.findUnique({
       where: {id: documentId}
     })
-
+    console.log(doc)
     if(!doc) throw new ForbiddenException('Document not Found')
 
-    const process = await this.databaseService.ingestionProcess.create({
-      data: {
-        documentId
-      }
-    })
-    // Logic for Python Connection
-    return process;
+    const response = await firstValueFrom(this.httpService.post(`${this.pythonServiceUrl}/ingest/${documentId}`))
+    console.log(response.data)
+
+    if(response.data.status === 'Completed')
+      return {status : response.data.message}
+    
+    if(response.data.status === 'Pending')
+    {
+      await this.databaseService.ingestionProcess.create({
+        data: {
+          documentId: documentId,
+          status: response.data.status,
+        }
+      })
+    }
+
+    return response.data;
   }
 
-  async getIngestionStatus(processId: number) {
-    const process = await this.databaseService.ingestionProcess.findUnique({
-      where: {id: processId}
+  async getIngestionStatus(documentId: number) {
+    const ingestDoc = await this.databaseService.ingestionProcess.findUnique({
+      where: {documentId}
     })
 
-    if(!process) throw new ForbiddenException("Ingestion Process not found");
+    if(!ingestDoc) throw new ForbiddenException("Ingestion Process not started");
 
-    return process
+    const response = await firstValueFrom(this.httpService.get(`${this.pythonServiceUrl}/ingestion_status/${documentId}`))
+
+    if(ingestDoc.status !== response.data.status){
+      await this.databaseService.ingestionProcess.update({
+        where: {documentId},
+        data: {
+          status: response.data.status
+        }
+      })
+    }
+
+    return response.data;
   }
 }

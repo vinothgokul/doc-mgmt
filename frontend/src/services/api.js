@@ -36,5 +36,5 @@ export const documentApi = {
   updateDocument: (id, formData) => api.patch(`/document/${id}`,formData, { headers: { 'Content-Type': 'multipart/form-data' }}),
   deleteDocument: (id) => api.delete(`/document/${id}`),
   triggerIngestion: (id) => api.post(`/document/${id}/ingestion/start`),
-  getIngestionStatus: (processId) => api.get(`/document/ingestion/${processId}`)
+  getIngestionStatus: (id) => api.get(`/document/ingestion/${id}`)
 }

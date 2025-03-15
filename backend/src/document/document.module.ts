@@ -4,6 +4,7 @@ import { DocumentController } from './document.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { diskStorage } from 'multer';
       })
     }),
     DatabaseModule,
-    
+    HttpModule
   ],
   controllers: [DocumentController],
   providers: [DocumentService],

@@ -6,10 +6,11 @@ import { useDocument } from "../context/DocumentContext";
 export default function Dashboard() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [message, setMessage] = useState(null)
+  const [message, setMessage] = useState(null);
+  const [ingestStatus, setIngestStatus] = useState(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { fetchDocuments, loading, documents, uploadDocument } = useDocument();
+  const { fetchDocuments, loading, documents, uploadDocument, triggerIngestion, triggerStatus } = useDocument();
 
   useEffect(() => {
     fetchDocuments();
@@ -40,6 +41,17 @@ export default function Dashboard() {
     setTitle("");
     setFile(null);
   };
+
+  const handleIngest = async (id, ingest) =>{
+    setIngestStatus("Loading...");
+    ingest === "trigger" ? await triggerIngestion(id) : await triggerStatus(id);
+    console.log(documents.find(doc => doc.id === id));
+    setIngestStatus(documents.find(doc => doc.id === id).triggerStatus);
+
+    setTimeout(() => {
+      setIngestStatus(null)
+    }, 5000);
+  }
 
   return (
     <>
@@ -75,7 +87,12 @@ export default function Dashboard() {
                     <tr>
                       <th>ID</th>
                       <th>Title</th>
-                      <th>Path</th>
+                      {user.role === "ADMIN" &&
+                        <>
+                          <th>Actions</th>
+                          <th>Status</th>
+                        </>
+                      }
                     </tr>
                   </thead>
                   <tbody>
@@ -83,7 +100,15 @@ export default function Dashboard() {
                       <tr key={doc.id}>
                         <td>{doc.id}</td>
                         <td>{doc.title}</td>
-                        <td>{doc.filePath}</td>
+                        {user.role === "ADMIN" &&
+                          <>
+                            <td>
+                              <button type="button" onClick={() => handleIngest(doc.id, "trigger")}>Ingest</button>
+                              <button type="button" onClick={() => handleIngest(doc.id, "status")}>Status</button>
+                            </td>
+                            <td>{ingestStatus ? ingestStatus : null}</td>
+                          </>
+                        }
                       </tr>
                     ))}
                   </tbody>

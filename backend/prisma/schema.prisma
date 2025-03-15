@@ -25,16 +25,15 @@ model Document {
   id Int @id @default(autoincrement())
   title String
   filePath String
-  IngestionProcess IngestionProcess[]
+  IngestionProcess IngestionProcess?
 }
 
 model IngestionProcess {
   id Int @id @default(autoincrement())
-  documentId Int
+  documentId Int @unique
   document Document @relation(fields: [documentId], references: [id])
   status String @default("pending")
   startedAt DateTime @default(now())
-  updatedat DateTime @updatedAt
 }
 
 model RevokedToken {
