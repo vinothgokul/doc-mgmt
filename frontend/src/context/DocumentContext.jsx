@@ -38,6 +38,15 @@ export function DocumentProvider({children}) {
     }
   }
 
+  async function deleteDocument(id) {
+    try {
+      await documentApi.deleteDocument(id)
+    }
+    catch(error) {
+      console.error("Failed to delete the document", error.response?.data || error.message);
+    }
+  }
+
   async function triggerIngestion(id) {
     try {
       const response = await documentApi.triggerIngestion(id);
@@ -69,8 +78,18 @@ export function DocumentProvider({children}) {
     }
   }
 
+  async function ask(data) {
+    try{
+      const response = await documentApi.ask(data)
+      return response
+    }
+    catch(error){
+      console.error("Failed to ask", error.response?.data || error.message)
+    }
+  }
+
   return(
-    <DocumentContext.Provider value={{ documents, loading, fetchDocuments ,uploadDocument, triggerIngestion, triggerStatus}}>
+    <DocumentContext.Provider value={{ documents, loading, fetchDocuments ,uploadDocument, deleteDocument, triggerIngestion, triggerStatus, ask}}>
       {children}
     </DocumentContext.Provider>
   )

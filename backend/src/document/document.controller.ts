@@ -49,14 +49,17 @@ export class DocumentController {
   }
 
   @Post(':id/ingestion/start')
-  @Roles(Role.ADMIN)
-  async triggerIngestion(@Param('id', ParseIntPipe) id: number) {
+  triggerIngestion(@Param('id', ParseIntPipe) id: number) {
     return this.documentService.triggerIngestion(id)
   }
 
-  @Get('ingestion/:processId')
-  @Roles(Role.ADMIN)
-  async getIngestionStatus(@Param('processId', ParseIntPipe) processId: number) {
-    return this.documentService.getIngestionStatus(processId)
+  @Get('ingestion/:docId')
+  getIngestionStatus(@Param('docId', ParseIntPipe) docId: number) {
+    return this.documentService.getIngestionStatus(docId)
+  }
+
+  @Post('ask')
+  ask(@Body('question') question: string) {
+    return this.documentService.ask(question)
   }
 }

@@ -110,7 +110,7 @@ export default function UserManagement() {
                         <td>{user.role}</td>
                         <td>
                           <button type="button" onClick={() => setEditingUser(user)} >Edit</button>
-                          <button type="button" onClick={()=>handleDelete(user.id)}>Delete</button>
+                          <button type="button" onClick={()=>handleDelete(user.id)} className="del-btn">Delete</button>
                         </td>
                       </tr>
                     ))}

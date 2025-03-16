@@ -60,6 +60,8 @@ export class DocumentService {
 
   async remove(id: number) {
 
+    await this.databaseService.ingestionProcess.deleteMany()
+
     const document = await this.databaseService.document.findUnique({
       where: {id}
     })
@@ -72,17 +74,13 @@ export class DocumentService {
   }
 
   async triggerIngestion(documentId: number){
-    const doc = await this.databaseService.document.findUnique({
-      where: {id: documentId}
-    })
-    console.log(doc)
-    if(!doc) throw new ForbiddenException('Document not Found')
+    // const ingestDoc = await this.databaseService.ingestionProcess.findUnique({
+    //   where: {documentId}
+    // })
+
+    // if(ingestDoc) throw new ForbiddenException('Document already injected')
 
     const response = await firstValueFrom(this.httpService.post(`${this.pythonServiceUrl}/ingest/${documentId}`))
-    console.log(response.data)
-
-    if(response.data.status === 'Completed')
-      return {status : response.data.message}
     
     if(response.data.status === 'Pending')
     {
@@ -116,5 +114,9 @@ export class DocumentService {
     }
 
     return response.data;
+  }
+  async ask(question: string) {
+    const response = await firstValueFrom(this.httpService.post(`${this.pythonServiceUrl}/ask`, {question}))
+    return response.data
   }
 }
